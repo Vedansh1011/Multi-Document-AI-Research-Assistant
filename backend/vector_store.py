@@ -1,7 +1,9 @@
 from pathlib import Path
+
 import pickle
 
 import faiss
+
 import numpy as np
 
 
@@ -22,6 +24,7 @@ class VectorStore:
         metadata: list[dict],
     ) -> None:
         """Add normalized vectors and their metadata to the index."""
+
         if vectors.ndim != 2:
             raise ValueError("vectors must be a 2D array.")
 
@@ -48,6 +51,7 @@ class VectorStore:
         top_k: int = 5,
     ) -> list[dict]:
         """Return the top-k most similar records."""
+
         if top_k <= 0:
             raise ValueError(
                 "top_k must be greater than 0."
@@ -87,12 +91,64 @@ class VectorStore:
 
         return results
 
+    def delete_source(self, source: str) -> int:
+        """
+        Remove all indexed chunks belonging to a source document.
+
+        Returns the number of removed chunks.
+        """
+
+        if not source.strip():
+            raise ValueError("source must not be empty.")
+
+        if self.index.ntotal == 0:
+            return 0
+
+        keep_indices = [
+            index
+            for index, metadata in enumerate(self.metadata)
+            if metadata.get("source") != source
+        ]
+
+        removed_count = len(self.metadata) - len(keep_indices)
+
+        if removed_count == 0:
+            return 0
+
+        if keep_indices:
+            remaining_vectors = np.vstack(
+                [
+                    self.index.reconstruct(index)
+                    for index in keep_indices
+                ]
+            ).astype(np.float32)
+        else:
+            remaining_vectors = np.empty(
+                (0, self.dimension),
+                dtype=np.float32,
+            )
+
+        new_index = faiss.IndexFlatIP(self.dimension)
+
+        if len(remaining_vectors) > 0:
+            new_index.add(remaining_vectors)
+
+        self.index = new_index
+
+        self.metadata = [
+            self.metadata[index]
+            for index in keep_indices
+        ]
+
+        return removed_count
+
     def save(
         self,
         index_path: str | Path,
         metadata_path: str | Path,
     ) -> None:
         """Persist the FAISS index and metadata to disk."""
+
         index_path = Path(index_path)
         metadata_path = Path(metadata_path)
 
@@ -129,6 +185,7 @@ class VectorStore:
         metadata_path: str | Path,
     ) -> "VectorStore":
         """Load a persisted FAISS index and metadata."""
+
         index_path = Path(index_path)
         metadata_path = Path(metadata_path)
 
