@@ -3,6 +3,10 @@ uvicorn[standard]
 python-multipart
 python-dotenv
 pymupdf
+
+--extra-index-url https://download.pytorch.org/whl/cpu
+torch==2.14.0+cpu
+
 sentence-transformers
 faiss-cpu
 google-genai
