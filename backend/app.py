@@ -1,6 +1,9 @@
 from contextlib import asynccontextmanager
 from pathlib import Path
 import re
+
+from dotenv import load_dotenv
+
 import unicodedata
 
 from fastapi import FastAPI, File, HTTPException, Response, UploadFile
@@ -15,6 +18,8 @@ from backend.retrieval import Retriever
 from backend.text_processor import chunk_pages
 from backend.vector_store import VectorStore
 
+
+load_dotenv()
 
 PROCESSED_DIR = Path("data/processed")
 DOCUMENTS_DIR = Path("data/documents")
