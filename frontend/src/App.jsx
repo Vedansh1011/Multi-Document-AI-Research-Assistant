@@ -5,7 +5,8 @@ import rehypeKatex from "rehype-katex";
 import "katex/dist/katex.min.css";
 import "./App.css";
 
-const API_BASE_URL = "https://multi-document-ai-research-assistant.onrender.com";
+const API_BASE_URL =
+  "https://multi-document-ai-research-assistant.onrender.com";
 
 function normalizeMathDelimiters(text) {
   return text
